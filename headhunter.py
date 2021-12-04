@@ -2,41 +2,35 @@ import requests
 from pprint import pprint
 
 
-def search_vacancies(search_text=''):
+def search_vacancies(search_text, area, clusters=False):
     api_url = 'https://api.hh.ru/vacancies'
 
     params = {
-        'area': 1,
-        'text': 'Разработчик {}'.format(search_text),
-        'search_field': 'name',
-        'per_page': 0,
-        'clusters': True,
-    }
-    response = requests.get(api_url, params=params)
-    data = response.json()
-   
-    return data['found']
-
-
-def fetch_salary(search_text='Разработчик Pyhon'):
-    api_url = 'https://api.hh.ru/vacancies'
-
-    params = {
-        'area': 1,
+        'area': area,
         'text': search_text,
         'search_field': 'name',
-        # 'per_page': 0,
-        # 'clusters': True,
+        'clusters': clusters,
     }
+
     response = requests.get(api_url, params=params)
-    data = response.json()['items']
+    if response.ok:
+        return response.json()
 
-    list_salary = [elem['salary'] for elem in data]
 
-    return list_salary
+def predict_rub_salary(vacancy):
+    salary = vacancy['salary']
+    print(salary)
+    if salary['currency'] == 'RUR':
+        if salary['from'] and salary['to']:
+            return int((salary['from'] + salary['to']) / 2)
+        elif salary['from']:
+            return int(salary['from'] * 1.2)
+        elif salary['to']:
+            return int(salary['to'] * 0.8)
 
 
 if __name__ == '__main__':
+
     code_lauguages = [
         'Java',
         'JavaScript',
@@ -51,11 +45,10 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    search_result = {}
+    count_vacancy = {}
 
-    # # for code_lauguage in code_lauguages:
-    # #     search_result[code_lauguage] = search_vacancies(code_lauguage)
+    vacancies = search_vacancies(search_text=f'Разработчик Python', area=1)
 
-    # pprint(search_result)
+    average_salaries = [predict_rub_salary(vacancy) for vacancy in vacancies['items']]
 
-    pprint(fetch_salary())
+    pprint(average_salaries)
