@@ -1,14 +1,16 @@
 import requests
 from pprint import pprint
 
+AREA = 1 # id региона или населенного пункта https://api.hh.ru/areas
 
-def search_vacancies(search_text, area, clusters=False):
+def search_vacancies(search_text, area, page=0, clusters=False, search_field=''):
     api_url = 'https://api.hh.ru/vacancies'
 
     params = {
         'area': area,
         'text': search_text,
-        'search_field': 'name',
+        'search_field': search_field,
+        'page': page,
         'clusters': clusters,
     }
 
@@ -47,15 +49,20 @@ if __name__ == '__main__':
     search_result = {}
 
     for code in code_lauguages:
-        
+        print('Parse for ', code)
         search_result[code] = {}
-        
-        vacancies = search_vacancies(search_text=f'Разработчик {code}', area=1, clusters=True)
-        salaries = [predict_rub_salary(vacancy) for vacancy in vacancies['items']]
-        salaries = [elem for elem in salaries if elem]
 
+        vacancies = search_vacancies(search_text=f'Разработчик {code}', area=AREA, search_field='name')
+        salaries = [predict_rub_salary(vacancy) for vacancy in vacancies['items']]
         search_result[code]['vacancies_found'] = vacancies['found']
+        for page in range(1,vacancies['pages']+1):
+            vacancies = search_vacancies(search_text=f'Разработчик {code}', area=AREA, page=page, search_field='name')
+            salaries.extend([predict_rub_salary(vacancy) for vacancy in vacancies['items']])
+        
+        search_result[code]['vacancies_found'] = len(salaries)
+        salaries = [elem for elem in salaries if elem and elem > 40000]
+
         search_result[code]['vacancies_processed'] = len(salaries)
         search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
-
+        
     pprint(search_result)
