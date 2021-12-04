@@ -17,6 +17,9 @@ def search_vacancies(search_text, area, page=0, clusters=False, search_field='')
     response = requests.get(api_url, params=params)
     if response.ok:
         return response.json()
+    else:
+        response.raise_for_status()
+        return {'items':[]}
 
 
 def predict_rub_salary(vacancy):
@@ -28,6 +31,30 @@ def predict_rub_salary(vacancy):
             return int(salary['from'] * 1.2)
         elif salary['to']:
             return int(salary['to'] * 0.8)
+
+
+def collect_average_salary(code_lauguages):
+    search_result = {}
+
+    for code in code_lauguages:
+        print('Parse for ', code)
+        search_result[code] = {}
+
+        vacancies = search_vacancies(search_text=f'Разработчик {code}', area=AREA, search_field='name')
+        salaries = [predict_rub_salary(vacancy) for vacancy in vacancies['items']]
+        search_result[code]['vacancies_found'] = vacancies['found']
+
+        for page in range(1,vacancies['pages'] + 1):
+            vacancies = search_vacancies(search_text=f'Разработчик {code}', area=AREA, page=page, search_field='name')
+            salaries.extend([predict_rub_salary(vacancy) for vacancy in vacancies['items']])
+        
+        search_result[code]['vacancies_found'] = len(salaries)
+        salaries = [elem for elem in salaries if elem and elem > 20000]
+
+        search_result[code]['vacancies_processed'] = len(salaries)
+        search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
+        
+    return search_result
 
 
 if __name__ == '__main__':
@@ -46,23 +73,4 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    search_result = {}
-
-    for code in code_lauguages:
-        print('Parse for ', code)
-        search_result[code] = {}
-
-        vacancies = search_vacancies(search_text=f'Разработчик {code}', area=AREA, search_field='name')
-        salaries = [predict_rub_salary(vacancy) for vacancy in vacancies['items']]
-        search_result[code]['vacancies_found'] = vacancies['found']
-        for page in range(1,vacancies['pages']+1):
-            vacancies = search_vacancies(search_text=f'Разработчик {code}', area=AREA, page=page, search_field='name')
-            salaries.extend([predict_rub_salary(vacancy) for vacancy in vacancies['items']])
-        
-        search_result[code]['vacancies_found'] = len(salaries)
-        salaries = [elem for elem in salaries if elem and elem > 40000]
-
-        search_result[code]['vacancies_processed'] = len(salaries)
-        search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
-        
-    pprint(search_result)
+    pprint(collect_average_salary(code_lauguages))
