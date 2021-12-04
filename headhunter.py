@@ -19,8 +19,7 @@ def search_vacancies(search_text, area, clusters=False):
 
 def predict_rub_salary(vacancy):
     salary = vacancy['salary']
-    print(salary)
-    if salary['currency'] == 'RUR':
+    if salary and salary['currency'] == 'RUR':
         if salary['from'] and salary['to']:
             return int((salary['from'] + salary['to']) / 2)
         elif salary['from']:
@@ -45,10 +44,18 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    count_vacancy = {}
+    search_result = {}
 
-    vacancies = search_vacancies(search_text=f'Разработчик Python', area=1)
+    for code in code_lauguages:
+        
+        search_result[code] = {}
+        
+        vacancies = search_vacancies(search_text=f'Разработчик {code}', area=1, clusters=True)
+        salaries = [predict_rub_salary(vacancy) for vacancy in vacancies['items']]
+        salaries = [elem for elem in salaries if elem]
 
-    average_salaries = [predict_rub_salary(vacancy) for vacancy in vacancies['items']]
+        search_result[code]['vacancies_found'] = vacancies['found']
+        search_result[code]['vacancies_processed'] = len(salaries)
+        search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
 
-    pprint(average_salaries)
+    pprint(search_result)
