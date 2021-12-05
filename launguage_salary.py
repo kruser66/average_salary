@@ -1,6 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
+from terminaltables import AsciiTable
 
 
 def search_vacancies_hh(search_text, area, page=0, clusters=False, search_field=''):
@@ -115,12 +116,24 @@ def collect_average_salary_sj(secret_key, code_lauguages, town):
     return search_result
 
 
+def result_formatted_out(result, title=''):
+    data = []
+    data.append(['Язык программирования', 'Вакансий найдено', 'Вакансий обработано', 'Средняя зарплата'])
+    for code, value in result.items():
+        data.append([code, value['vacancies_found'], value['vacancies_processed'], value['average_salary']])
+
+    table = AsciiTable(data)
+    table.title = title
+    print(table.table)    
+
+
 if __name__ == '__main__':
 
     load_dotenv()
     secret_key = os.getenv('SECRET_KEY')
 
     area = 1 # id региона (Москва) или населенного пункта здесь https://api.hh.ru/areas для поиска по HeadHunter
+    title_hh = 'Москва'
     town = 'Москва' # Имя города или id для поиска по SuperJob - id смотреть тут: https://api.superjob.ru/2.0/regions/combined/
 
     code_lauguages = [
@@ -137,7 +150,8 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    print('Собираем данные HeadHunter')
-    print(collect_average_salary_hh(code_lauguages, area))
-    print('Собираем данные SuperJob')
-    print(collect_average_salary_sj(secret_key, code_lauguages, town))
+    result_hh = collect_average_salary_hh(code_lauguages, area)
+    result_formatted_out(result_hh, f' HeadHunter {title_hh}')
+
+    result_sj = collect_average_salary_sj(secret_key, code_lauguages, town)
+    result_formatted_out(result_sj, f' SuperJob {town}')
