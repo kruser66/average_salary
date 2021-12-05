@@ -55,11 +55,11 @@ def predict_salary(payment_from, payment_to, currency):
 
 def predict_rub_salary_hh(vacancy):
     salary = vacancy['salary']
-    payment_from = salary['from']
-    payment_to = salary['to']
-    currency = salary['currency']
-
     if salary:
+        payment_from = salary['from']
+        payment_to = salary['to']
+        currency = salary['currency']
+
         return predict_salary(payment_from, payment_to, currency)
 
 
@@ -138,5 +138,7 @@ if __name__ == '__main__':
         'Scala',
     ]
 
+    print('Собираем данные HeadHUnter')
     pprint(collect_average_salary_hh(code_lauguages, area))
+    print('Собираем данные SuperJob')
     pprint(collect_average_salary_sj(secret_key, code_lauguages, town))
