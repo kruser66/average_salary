@@ -1,6 +1,5 @@
 import os
 import requests
-from pprint import pprint
 from dotenv import load_dotenv
 
 
@@ -78,8 +77,6 @@ def data_collection(search_result, salaries):
     search_result['vacancies_processed'] = len(salaries)
     search_result['average_salary'] = int(sum(salaries) / len(salaries))
 
-    # return search_result    
-
 
 def collect_average_salary_hh(code_lauguages, town):
     search_result = {}
@@ -95,11 +92,6 @@ def collect_average_salary_hh(code_lauguages, town):
             salaries.extend([predict_rub_salary_hh(vacancy) for vacancy in vacancies['items']])
 
         data_collection(search_result[code], salaries)        
-        # search_result[code]['vacancies_found'] = len(salaries)
-        # salaries = [elem for elem in salaries if elem and elem > 20000]
-
-        # search_result[code]['vacancies_processed'] = len(salaries)
-        # search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
         
     return search_result
 
@@ -119,11 +111,6 @@ def collect_average_salary_sj(secret_key, code_lauguages, town):
             page += 1
         
         data_collection(search_result[code], salaries)        
-        # search_result[code]['vacancies_found'] = len(salaries)
-        # salaries = [elem for elem in salaries if elem and elem > 20000]
-
-        # search_result[code]['vacancies_processed'] = len(salaries)
-        # search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
         
     return search_result
 
@@ -133,7 +120,7 @@ if __name__ == '__main__':
     load_dotenv()
     secret_key = os.getenv('SECRET_KEY')
 
-    area = 1 # id региона или населенного пункта https://api.hh.ru/areas для поиска по HeadHunter 1- Москва
+    area = 1 # id региона (Москва) или населенного пункта здесь https://api.hh.ru/areas для поиска по HeadHunter
     town = 'Москва' # Имя города или id для поиска по SuperJob - id смотреть тут: https://api.superjob.ru/2.0/regions/combined/
 
     code_lauguages = [
@@ -151,6 +138,6 @@ if __name__ == '__main__':
     ]
 
     print('Собираем данные HeadHunter')
-    pprint(collect_average_salary_hh(code_lauguages, area))
+    print(collect_average_salary_hh(code_lauguages, area))
     print('Собираем данные SuperJob')
-    pprint(collect_average_salary_sj(secret_key, code_lauguages, town))
+    print(collect_average_salary_sj(secret_key, code_lauguages, town))
