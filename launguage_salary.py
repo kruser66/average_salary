@@ -71,6 +71,16 @@ def predict_rub_salary_sj(vacancy):
     return predict_salary(payment_from, payment_to, currency)
 
 
+def data_collection(search_result, salaries):
+    search_result['vacancies_found'] = len(salaries)
+    salaries = [elem for elem in salaries if elem and elem > 20000]
+
+    search_result['vacancies_processed'] = len(salaries)
+    search_result['average_salary'] = int(sum(salaries) / len(salaries))
+
+    # return search_result    
+
+
 def collect_average_salary_hh(code_lauguages, town):
     search_result = {}
 
@@ -83,12 +93,13 @@ def collect_average_salary_hh(code_lauguages, town):
         for page in range(1,vacancies['pages'] + 1):
             vacancies = search_vacancies_hh(search_text=f'Разработчик {code}', area=town, page=page, search_field='name')
             salaries.extend([predict_rub_salary_hh(vacancy) for vacancy in vacancies['items']])
-        
-        search_result[code]['vacancies_found'] = len(salaries)
-        salaries = [elem for elem in salaries if elem and elem > 20000]
 
-        search_result[code]['vacancies_processed'] = len(salaries)
-        search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
+        data_collection(search_result[code], salaries)        
+        # search_result[code]['vacancies_found'] = len(salaries)
+        # salaries = [elem for elem in salaries if elem and elem > 20000]
+
+        # search_result[code]['vacancies_processed'] = len(salaries)
+        # search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
         
     return search_result
 
@@ -107,11 +118,12 @@ def collect_average_salary_sj(secret_key, code_lauguages, town):
             salaries.extend([predict_rub_salary_sj(vacancy) for vacancy in vacancies['objects']])
             page += 1
         
-        search_result[code]['vacancies_found'] = len(salaries)
-        salaries = [elem for elem in salaries if elem and elem > 20000]
+        data_collection(search_result[code], salaries)        
+        # search_result[code]['vacancies_found'] = len(salaries)
+        # salaries = [elem for elem in salaries if elem and elem > 20000]
 
-        search_result[code]['vacancies_processed'] = len(salaries)
-        search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
+        # search_result[code]['vacancies_processed'] = len(salaries)
+        # search_result[code]['average_salary'] = int(sum(salaries) / len(salaries))
         
     return search_result
 
@@ -138,7 +150,7 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    print('Собираем данные HeadHUnter')
+    print('Собираем данные HeadHunter')
     pprint(collect_average_salary_hh(code_lauguages, area))
     print('Собираем данные SuperJob')
     pprint(collect_average_salary_sj(secret_key, code_lauguages, town))
