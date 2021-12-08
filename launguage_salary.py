@@ -41,32 +41,30 @@ def search_vacancies_sj(secret_key, search_text, town, page=0):
     return response.json()
 
 
-def predict_salary(payment_from, payment_to, currency):
-    if currency == 'rub' or currency == 'RUR':
-        if payment_from and payment_to:
-            return int((payment_from + payment_to) / 2)
-        elif payment_from:
-            return int(payment_from * 1.2)
-        elif payment_to:
-            return int(payment_to * 0.8)
+def predict_salary(payment_from, payment_to):
+    if payment_from and payment_to:
+        return int((payment_from + payment_to) / 2)
+    elif payment_from:
+        return int(payment_from * 1.2)
+    elif payment_to:
+        return int(payment_to * 0.8)
 
 
 def predict_rub_salary_hh(vacancy):
     salary = vacancy['salary']
-    if salary:
-        payment_from = salary['from']
-        payment_to = salary['to']
-        currency = salary['currency']
-
-        return predict_salary(payment_from, payment_to, currency)
+    payment_from = salary['from']
+    payment_to = salary['to']
+    currency = salary['currency']
+    if currency == 'RUR':
+        return predict_salary(payment_from, payment_to)
 
 
 def predict_rub_salary_sj(vacancy):
     payment_from = vacancy['payment_from']
     payment_to = vacancy['payment_to']
     currency = vacancy['currency']
-
-    return predict_salary(payment_from, payment_to, currency)
+    if currency == 'rub':
+        return predict_salary(payment_from, payment_to)
 
 
 def data_collection(search_result, salaries):
@@ -100,7 +98,8 @@ def collect_average_salary_hh(code_lauguages, town):
             )
             salaries.extend(
                 [predict_rub_salary_hh(vacancy)
-                    for vacancy in vacancies['items']]
+                    for vacancy in vacancies['items']
+                    if vacancy['salary']]
             )
 
         data_collection(search_result[code], salaries)
