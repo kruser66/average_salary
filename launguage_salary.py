@@ -6,7 +6,6 @@ from terminaltables import AsciiTable
 
 def search_vacancies_hh(search_text, area, page=0,
                         clusters=False, search_field=''):
-
     api_url = 'https://api.hh.ru/vacancies'
 
     params = {
@@ -67,18 +66,26 @@ def predict_rub_salary_sj(vacancy):
         return predict_salary(payment_from, payment_to)
 
 
-def data_collection(search_result, salaries):
-    salaries = [elem for elem in salaries if elem and elem > 20000]
+def calculation_of_values(salaries, vacancies_found):
+    processed = [elem for elem in salaries if elem and elem > 20000]
+    vacancies_processed = len(processed)
 
-    search_result['vacancies_processed'] = len(salaries)
-    search_result['average_salary'] = int(sum(salaries) / len(salaries))
+    if vacancies_processed:
+        average_salary = int(sum(processed) / vacancies_processed)
+
+    values = {
+        'vacancies_found': vacancies_found,
+        'vacancies_processed': vacancies_processed,
+        'average_salary': average_salary,
+    }
+
+    return values
 
 
 def collect_average_salary_hh(code_lauguages, town):
     search_result = {}
 
     for code in code_lauguages:
-        search_result[code] = {}
 
         vacancies = search_vacancies_hh(
             search_text=f'Разработчик {code}',
@@ -86,7 +93,7 @@ def collect_average_salary_hh(code_lauguages, town):
             clusters=True,
             search_field='name'
         )
-        search_result[code]['vacancies_found'] = vacancies['found']
+        vacancies_found = vacancies['found']
 
         salaries = [predict_rub_salary_hh(vacancy)
                     for vacancy in vacancies['items']
@@ -105,7 +112,7 @@ def collect_average_salary_hh(code_lauguages, town):
                     if vacancy['salary']]
             )
 
-        data_collection(search_result[code], salaries)
+        search_result[code] = calculation_of_values(salaries, vacancies_found)
 
     return search_result
 
@@ -120,7 +127,7 @@ def collect_average_salary_sj(secret_key, code_lauguages, town):
             search_text=f'Разработчик {code}',
             town=town
         )
-        search_result[code]['vacancies_found'] = vacancies['total']
+        vacancies_found = vacancies['total']
 
         salaries = [predict_rub_salary_sj(vacancy)
                     for vacancy in vacancies['objects']]
@@ -139,7 +146,7 @@ def collect_average_salary_sj(secret_key, code_lauguages, town):
             )
             page += 1
 
-        data_collection(search_result[code], salaries)
+        search_result[code] = calculation_of_values(salaries, vacancies_found)
 
     return search_result
 
