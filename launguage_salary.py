@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 from terminaltables import AsciiTable
 
 
-def search_vacancies_hh(search_text, area, page=0, clusters=False, search_field=''):
+def search_vacancies_hh(search_text, area, page=0,
+                        clusters=False, search_field=''):
+
     api_url = 'https://api.hh.ru/vacancies'
 
     params = {
@@ -20,12 +22,12 @@ def search_vacancies_hh(search_text, area, page=0, clusters=False, search_field=
         return response.json()
     else:
         response.raise_for_status()
-        return {'items':[]}
+        return {'items': []}
 
 
 def search_vacancies_sj(secret_key, search_text, town, page=0):
     url = 'https://api.superjob.ru/2.0/vacancies/'
-    
+
     headers = {
         'X-Api-App-Id': secret_key,
     }
@@ -34,7 +36,7 @@ def search_vacancies_sj(secret_key, search_text, town, page=0):
         'page': page,
         'keywords': [[1, 'and', search_text]],
     }
-    
+
     response = requests.get(url, headers=headers, params=params)
     if response.ok:
         return response.json()
@@ -67,7 +69,7 @@ def predict_rub_salary_sj(vacancy):
     payment_from = vacancy['payment_from']
     payment_to = vacancy['payment_to']
     currency = vacancy['currency']
-    
+
     return predict_salary(payment_from, payment_to, currency)
 
 
@@ -85,15 +87,28 @@ def collect_average_salary_hh(code_lauguages, town):
     for code in code_lauguages:
         search_result[code] = {}
 
-        vacancies = search_vacancies_hh(search_text=f'Разработчик {code}', area=town, search_field='name')
-        salaries = [predict_rub_salary_hh(vacancy) for vacancy in vacancies['items']]
+        vacancies = search_vacancies_hh(
+            search_text=f'Разработчик {code}',
+            area=town,
+            search_field='name'
+        )
+        salaries = [predict_rub_salary_hh(vacancy)
+                    for vacancy in vacancies['items']]
 
-        for page in range(1,vacancies['pages'] + 1):
-            vacancies = search_vacancies_hh(search_text=f'Разработчик {code}', area=town, page=page, search_field='name')
-            salaries.extend([predict_rub_salary_hh(vacancy) for vacancy in vacancies['items']])
+        for page in range(1, vacancies['pages'] + 1):
+            vacancies = search_vacancies_hh(
+                search_text=f'Разработчик {code}',
+                area=town,
+                page=page,
+                search_field='name'
+            )
+            salaries.extend(
+                [predict_rub_salary_hh(vacancy)
+                    for vacancy in vacancies['items']]
+            )
 
-        data_collection(search_result[code], salaries)        
-        
+        data_collection(search_result[code], salaries)
+
     return search_result
 
 
@@ -102,25 +117,52 @@ def collect_average_salary_sj(secret_key, code_lauguages, town):
 
     for code in code_lauguages:
         search_result[code] = {}
-        vacancies = search_vacancies_sj(secret_key, search_text=f'Разработчик {code}', town=town)
-        salaries = [predict_rub_salary_sj(vacancy) for vacancy in vacancies['objects']]
+        vacancies = search_vacancies_sj(
+            secret_key,
+            search_text=f'Разработчик {code}',
+            town=town
+        )
+        salaries = [predict_rub_salary_sj(vacancy)
+                    for vacancy in vacancies['objects']]
 
         page = 1
         while vacancies['more']:
-            vacancies = search_vacancies_sj(secret_key, search_text=f'Разработчик {code}', town=town, page=page)
-            salaries.extend([predict_rub_salary_sj(vacancy) for vacancy in vacancies['objects']])
+            vacancies = search_vacancies_sj(
+                secret_key,
+                search_text=f'Разработчик {code}',
+                town=town,
+                page=page
+            )
+            salaries.extend(
+                [predict_rub_salary_sj(vacancy)
+                    for vacancy in vacancies['objects']]
+            )
             page += 1
-        
-        data_collection(search_result[code], salaries)        
-        
+
+        data_collection(search_result[code], salaries)
+
     return search_result
 
 
 def result_formatted_out(result, title=''):
     data = []
-    data.append(['Язык программирования', 'Вакансий найдено', 'Вакансий обработано', 'Средняя зарплата'])
+    table_title = [
+        'Язык программирования',
+        'Вакансий найдено',
+        'Вакансий обработано',
+        'Средняя зарплата'
+    ]
+
+    data.append(table_title)
     for code, value in result.items():
-        data.append([code, value['vacancies_found'], value['vacancies_processed'], value['average_salary']])
+        data.append(
+            [
+                code,
+                value['vacancies_found'],
+                value['vacancies_processed'],
+                value['average_salary']
+            ]
+        )
 
     table = AsciiTable(data)
     table.title = title
