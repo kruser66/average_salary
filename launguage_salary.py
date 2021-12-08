@@ -18,11 +18,9 @@ def search_vacancies_hh(search_text, area, page=0,
     }
 
     response = requests.get(api_url, params=params)
-    if response.ok:
-        return response.json()
-    else:
-        response.raise_for_status()
-        return {'items': []}
+    response.raise_for_status()
+
+    return response.json()
 
 
 def search_vacancies_sj(secret_key, search_text, town, page=0):
@@ -38,11 +36,9 @@ def search_vacancies_sj(secret_key, search_text, town, page=0):
     }
 
     response = requests.get(url, headers=headers, params=params)
-    if response.ok:
-        return response.json()
-    else:
-        response.raise_for_request()
-        return {'objects': []}
+    response.raise_for_status()
+
+    return response.json()
 
 
 def predict_salary(payment_from, payment_to, currency):
@@ -198,8 +194,21 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    result_hh = collect_average_salary_hh(code_launguages, area)
+    try:
+        result_hh = collect_average_salary_hh(code_launguages, area)
+
+    except requests.exceptions.HTTPError as error:
+        exit("Can't get data from server:\n{0}".format(error))
+
     result_formatted_out(result_hh, f' HeadHunter {title_hh}')
 
-    result_sj = collect_average_salary_sj(secret_key, code_launguages, town)
+    try:
+        result_sj = collect_average_salary_sj(
+            secret_key,
+            code_launguages,
+            town
+        )
+    except requests.exceptions.HTTPError as error:
+        exit("Can't get data from server:\n{0}".format(error))
+
     result_formatted_out(result_sj, f' SuperJob {town}')
