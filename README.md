@@ -37,7 +37,9 @@ python launguage_salary.py
 
 
 ## Переменные окружения
+```
 SUPERJOB_API_SECRET_KEY = 'YourAPI_SecretKey_for_SuperJob'
+```
 
 # Цель проекта
 
