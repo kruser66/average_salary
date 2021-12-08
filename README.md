@@ -36,6 +36,9 @@ python launguage_salary.py
 * `town` для `SuperJob` можно сразу указать название города
 
 
+## Переменные окружения
+SUPERJOB_API_SECRET_KEY = 'YourAPI_SecretKey_for_SuperJob'
+
 # Цель проекта
 
 Код написан в образовательных целях на онлайн-курсе для веб-разработчиков [Devman](dvmn.org).
