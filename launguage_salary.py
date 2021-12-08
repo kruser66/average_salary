@@ -68,7 +68,6 @@ def predict_rub_salary_sj(vacancy):
 
 
 def data_collection(search_result, salaries):
-    search_result['vacancies_found'] = len(salaries)
     salaries = [elem for elem in salaries if elem and elem > 20000]
 
     search_result['vacancies_processed'] = len(salaries)
@@ -84,10 +83,14 @@ def collect_average_salary_hh(code_lauguages, town):
         vacancies = search_vacancies_hh(
             search_text=f'Разработчик {code}',
             area=town,
+            clusters=True,
             search_field='name'
         )
+        search_result[code]['vacancies_found'] = vacancies['found']
+
         salaries = [predict_rub_salary_hh(vacancy)
-                    for vacancy in vacancies['items']]
+                    for vacancy in vacancies['items']
+                    if vacancy['salary']]
 
         for page in range(1, vacancies['pages'] + 1):
             vacancies = search_vacancies_hh(
@@ -117,6 +120,8 @@ def collect_average_salary_sj(secret_key, code_lauguages, town):
             search_text=f'Разработчик {code}',
             town=town
         )
+        search_result[code]['vacancies_found'] = vacancies['total']
+
         salaries = [predict_rub_salary_sj(vacancy)
                     for vacancy in vacancies['objects']]
 
