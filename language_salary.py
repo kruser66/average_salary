@@ -82,10 +82,10 @@ def calculation_of_values(salaries, vacancies_found):
     return values
 
 
-def collect_average_salary_hh(code_lauguages, town):
+def collect_average_salary_hh(code_languages, town):
     search_result = {}
 
-    for code in code_lauguages:
+    for code in code_languages:
 
         vacancies = search_vacancies_hh(
             search_text=f'Разработчик {code}',
@@ -117,10 +117,10 @@ def collect_average_salary_hh(code_lauguages, town):
     return search_result
 
 
-def collect_average_salary_sj(secret_key, code_lauguages, town):
+def collect_average_salary_sj(secret_key, code_languages, town):
     search_result = {}
 
-    for code in code_lauguages:
+    for code in code_languages:
         search_result[code] = {}
         vacancies = search_vacancies_sj(
             secret_key,
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     # Имя города для поиска по SuperJob
     town = 'Москва'
 
-    code_launguages = [
+    code_languages = [
         'Java',
         'JavaScript',
         'Python',
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     ]
 
     try:
-        result_hh = collect_average_salary_hh(code_launguages, area)
+        result_hh = collect_average_salary_hh(code_languages, area)
 
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
@@ -216,7 +216,7 @@ if __name__ == '__main__':
     try:
         result_sj = collect_average_salary_sj(
             secret_key,
-            code_launguages,
+            code_languages,
             town
         )
     except requests.exceptions.HTTPError as error:
