@@ -87,26 +87,14 @@ def collect_average_salary_hh(code_languages, town):
     average_salary = {}
 
     for code in code_languages:
+        salaries = []
 
-        vacancies = search_vacancies_hh(
-            search_text=f'Разработчик {code}',
-            area=town,
-            clusters=True,
-            search_field='name'
-        )
-        vacancies_found = vacancies['found']
-
-        salaries = [
-            predict_rub_salary_hh(vacancy)
-            for vacancy in vacancies['items']
-            if vacancy['salary']
-        ]
-
-        for page in range(1, vacancies['pages'] + 1):
+        for page in count():
             vacancies = search_vacancies_hh(
                 search_text=f'Разработчик {code}',
                 area=town,
                 page=page,
+                clusters=True,
                 search_field='name'
             )
             salaries.extend(
@@ -116,8 +104,10 @@ def collect_average_salary_hh(code_languages, town):
                     if vacancy['salary']
                 ]
             )
+            if page == vacancies['pages']:
+                break
 
-        average_salary[code] = calculate_totals(salaries, vacancies_found)
+        average_salary[code] = calculate_totals(salaries, vacancies['found'])
 
     return average_salary
 
@@ -149,7 +139,7 @@ def collect_average_salary_sj(secret_key, code_languages, town):
     return average_salary
 
 
-def output_formatted_result(result, title=''):
+def output_formatted_table(result, title=''):
     table_rows = []
     table_title = [
         'Язык программирования',
@@ -200,13 +190,13 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    # try:
-    #     result_hh = collect_average_salary_hh(code_languages, area_hh)
+    try:
+        result_hh = collect_average_salary_hh(code_languages, area_hh)
 
-    # except requests.exceptions.HTTPError as error:
-    #     exit("Can't get data from server:\n{0}".format(error))
+    except requests.exceptions.HTTPError as error:
+        exit("Can't get data from server:\n{0}".format(error))
 
-    # print(output_formatted_result(result_hh, f' HeadHunter {title_hh}'))
+    print(output_formatted_table(result_hh, f' HeadHunter {title_hh}'))
 
     try:
         result_sj = collect_average_salary_sj(
@@ -217,4 +207,4 @@ if __name__ == '__main__':
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    print(output_formatted_result(result_sj, f' SuperJob {town_sj}'))
+    print(output_formatted_table(result_sj, f' SuperJob {town_sj}'))
