@@ -188,15 +188,11 @@ if __name__ == '__main__':
     load_dotenv()
     secret_key = os.getenv('SUPERJOB_API_SECRET_KEY')
 
-    '''
-    id региона (Москва) или населенного пункта для поиска
-    по HeadHunter искать здесь: https://api.hh.ru/areas
-    '''
-    area = 1
+    # Для поиска по HeadHunter искать id здесь: https://api.hh.ru/areas
+    area_hh = 1
     title_hh = 'Москва'
 
-    # Имя города для поиска по SuperJob
-    town = 'Москва'
+    town_sj = 'Москва'
 
     code_languages = [
         'Java',
@@ -213,7 +209,7 @@ if __name__ == '__main__':
     ]
 
     try:
-        result_hh = collect_average_salary_hh(code_languages, area)
+        result_hh = collect_average_salary_hh(code_languages, area_hh)
 
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
@@ -224,9 +220,9 @@ if __name__ == '__main__':
         result_sj = collect_average_salary_sj(
             secret_key,
             code_languages,
-            town
+            town_sj
         )
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    output_formatted_result(result_sj, f' SuperJob {town}')
+    output_formatted_result(result_sj, f' SuperJob {town_sj}')
