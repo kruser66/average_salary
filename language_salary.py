@@ -2,6 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv
 from terminaltables import AsciiTable
+from itertools import count
 
 
 def search_vacancies_hh(search_text, area, page=0,
@@ -125,20 +126,9 @@ def collect_average_salary_sj(secret_key, code_languages, town):
     average_salary = {}
 
     for code in code_languages:
+        salaries = []
 
-        vacancies = search_vacancies_sj(
-            secret_key,
-            search_text=f'Разработчик {code}',
-            town=town
-        )
-        vacancies_found = vacancies['total']
-
-        salaries = [
-            predict_rub_salary_sj(vacancy) for vacancy in vacancies['objects']
-        ]
-
-        page = 1
-        while vacancies['more']:
+        for page in count():
             vacancies = search_vacancies_sj(
                 secret_key,
                 search_text=f'Разработчик {code}',
@@ -151,9 +141,10 @@ def collect_average_salary_sj(secret_key, code_languages, town):
                     for vacancy in vacancies['objects']
                 ]
             )
-            page += 1
+            if not vacancies['more']:
+                break
 
-        average_salary[code] = calculate_totals(salaries, vacancies_found)
+        average_salary[code] = calculate_totals(salaries, vacancies['total'])
 
     return average_salary
 
@@ -180,7 +171,7 @@ def output_formatted_result(result, title=''):
 
     table = AsciiTable(table_rows)
     table.title = title
-    
+
     return table.table
 
 
@@ -209,13 +200,13 @@ if __name__ == '__main__':
         'Scala',
     ]
 
-    try:
-        result_hh = collect_average_salary_hh(code_languages, area_hh)
+    # try:
+    #     result_hh = collect_average_salary_hh(code_languages, area_hh)
 
-    except requests.exceptions.HTTPError as error:
-        exit("Can't get data from server:\n{0}".format(error))
+    # except requests.exceptions.HTTPError as error:
+    #     exit("Can't get data from server:\n{0}".format(error))
 
-    print(output_formatted_result(result_hh, f' HeadHunter {title_hh}'))
+    # print(output_formatted_result(result_hh, f' HeadHunter {title_hh}'))
 
     try:
         result_sj = collect_average_salary_sj(
