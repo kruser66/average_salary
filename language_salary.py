@@ -66,24 +66,24 @@ def predict_rub_salary_sj(vacancy):
         return predict_salary(payment_from, payment_to)
 
 
-def calculation_of_values(salaries, vacancies_found):
+def calculate_totals(salaries, vacancies_found):
     processed = [elem for elem in salaries if elem and elem > 20000]
     vacancies_processed = len(processed)
 
     if vacancies_processed:
         average_salary = int(sum(processed) / vacancies_processed)
+    else:
+        average_salary = 0
 
-    values = {
+    return {
         'vacancies_found': vacancies_found,
         'vacancies_processed': vacancies_processed,
         'average_salary': average_salary,
     }
 
-    return values
-
 
 def collect_average_salary_hh(code_languages, town):
-    search_result = {}
+    average_salary = {}
 
     for code in code_languages:
 
@@ -112,16 +112,16 @@ def collect_average_salary_hh(code_languages, town):
                     if vacancy['salary']]
             )
 
-        search_result[code] = calculation_of_values(salaries, vacancies_found)
+        average_salary[code] = calculate_totals(salaries, vacancies_found)
 
-    return search_result
+    return average_salary
 
 
 def collect_average_salary_sj(secret_key, code_languages, town):
-    search_result = {}
+    average_salary = {}
 
     for code in code_languages:
-        search_result[code] = {}
+
         vacancies = search_vacancies_sj(
             secret_key,
             search_text=f'Разработчик {code}',
@@ -146,13 +146,13 @@ def collect_average_salary_sj(secret_key, code_languages, town):
             )
             page += 1
 
-        search_result[code] = calculation_of_values(salaries, vacancies_found)
+        average_salary[code] = calculate_totals(salaries, vacancies_found)
 
-    return search_result
+    return average_salary
 
 
-def result_formatted_out(result, title=''):
-    data = []
+def output_formatted_result(result, title=''):
+    table_rows = []
     table_title = [
         'Язык программирования',
         'Вакансий найдено',
@@ -160,18 +160,18 @@ def result_formatted_out(result, title=''):
         'Средняя зарплата'
     ]
 
-    data.append(table_title)
-    for code, value in result.items():
-        data.append(
+    table_rows.append(table_title)
+    for code, total in result.items():
+        table_rows.append(
             [
                 code,
-                value['vacancies_found'],
-                value['vacancies_processed'],
-                value['average_salary']
+                total['vacancies_found'],
+                total['vacancies_processed'],
+                total['average_salary']
             ]
         )
 
-    table = AsciiTable(data)
+    table = AsciiTable(table_rows)
     table.title = title
     print(table.table)
 
@@ -211,7 +211,7 @@ if __name__ == '__main__':
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    result_formatted_out(result_hh, f' HeadHunter {title_hh}')
+    output_formatted_result(result_hh, f' HeadHunter {title_hh}')
 
     try:
         result_sj = collect_average_salary_sj(
@@ -222,4 +222,4 @@ if __name__ == '__main__':
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    result_formatted_out(result_sj, f' SuperJob {town}')
+    output_formatted_result(result_sj, f' SuperJob {town}')
