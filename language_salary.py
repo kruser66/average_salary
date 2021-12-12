@@ -180,7 +180,8 @@ def output_formatted_result(result, title=''):
 
     table = AsciiTable(table_rows)
     table.title = title
-    print(table.table)
+    
+    return table.table
 
 
 if __name__ == '__main__':
@@ -214,7 +215,7 @@ if __name__ == '__main__':
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    output_formatted_result(result_hh, f' HeadHunter {title_hh}')
+    print(output_formatted_result(result_hh, f' HeadHunter {title_hh}'))
 
     try:
         result_sj = collect_average_salary_sj(
@@ -225,4 +226,4 @@ if __name__ == '__main__':
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    output_formatted_result(result_sj, f' SuperJob {town_sj}')
+    print(output_formatted_result(result_sj, f' SuperJob {town_sj}'))
