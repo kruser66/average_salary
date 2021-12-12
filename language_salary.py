@@ -23,7 +23,7 @@ def search_vacancies_hh(search_text, area, page=0,
 
 
 def search_vacancies_sj(secret_key, search_text, town, page=0):
-    url = 'https://api.superjob.ru/2.0/vacancies/'
+    api_url = 'https://api.superjob.ru/2.0/vacancies/'
 
     headers = {
         'X-Api-App-Id': secret_key,
@@ -34,7 +34,7 @@ def search_vacancies_sj(secret_key, search_text, town, page=0):
         'keywords': [[1, 'and', search_text]],
     }
 
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(api_url, headers=headers, params=params)
     response.raise_for_status()
 
     return response.json()
@@ -95,9 +95,11 @@ def collect_average_salary_hh(code_languages, town):
         )
         vacancies_found = vacancies['found']
 
-        salaries = [predict_rub_salary_hh(vacancy)
-                    for vacancy in vacancies['items']
-                    if vacancy['salary']]
+        salaries = [
+            predict_rub_salary_hh(vacancy)
+            for vacancy in vacancies['items']
+            if vacancy['salary']
+        ]
 
         for page in range(1, vacancies['pages'] + 1):
             vacancies = search_vacancies_hh(
@@ -107,9 +109,11 @@ def collect_average_salary_hh(code_languages, town):
                 search_field='name'
             )
             salaries.extend(
-                [predict_rub_salary_hh(vacancy)
+                [
+                    predict_rub_salary_hh(vacancy)
                     for vacancy in vacancies['items']
-                    if vacancy['salary']]
+                    if vacancy['salary']
+                ]
             )
 
         average_salary[code] = calculate_totals(salaries, vacancies_found)
@@ -129,8 +133,9 @@ def collect_average_salary_sj(secret_key, code_languages, town):
         )
         vacancies_found = vacancies['total']
 
-        salaries = [predict_rub_salary_sj(vacancy)
-                    for vacancy in vacancies['objects']]
+        salaries = [
+            predict_rub_salary_sj(vacancy) for vacancy in vacancies['objects']
+        ]
 
         page = 1
         while vacancies['more']:
@@ -141,8 +146,10 @@ def collect_average_salary_sj(secret_key, code_languages, town):
                 page=page
             )
             salaries.extend(
-                [predict_rub_salary_sj(vacancy)
-                    for vacancy in vacancies['objects']]
+                [
+                    predict_rub_salary_sj(vacancy)
+                    for vacancy in vacancies['objects']
+                ]
             )
             page += 1
 
