@@ -139,7 +139,7 @@ def collect_average_salary_sj(secret_key, code_languages, town):
     return average_salary
 
 
-def output_formatted_table(result, title=''):
+def output_formatted_table(average_salaries, title=''):
     table_rows = []
     table_title = [
         'Язык программирования',
@@ -149,7 +149,7 @@ def output_formatted_table(result, title=''):
     ]
 
     table_rows.append(table_title)
-    for code, total in result.items():
+    for code, total in average_salaries.items():
         table_rows.append(
             [
                 code,
@@ -171,10 +171,10 @@ if __name__ == '__main__':
     secret_key = os.getenv('SUPERJOB_API_SECRET_KEY')
 
     # Для поиска по HeadHunter искать id здесь: https://api.hh.ru/areas
-    area_hh = 1
-    title_hh = 'Москва'
+    hh_id_area = 1
+    hh_title_name = 'Москва'
 
-    town_sj = 'Москва'
+    sj_town_name = 'Москва'
 
     code_languages = [
         'Java',
@@ -191,20 +191,26 @@ if __name__ == '__main__':
     ]
 
     try:
-        result_hh = collect_average_salary_hh(code_languages, area_hh)
+        average_salaries_hh = collect_average_salary_hh(
+            code_languages, hh_id_area
+        )
 
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    print(output_formatted_table(result_hh, f' HeadHunter {title_hh}'))
+    print(output_formatted_table(
+        average_salaries_hh, f' HeadHunter {hh_title_name}')
+    )
 
     try:
-        result_sj = collect_average_salary_sj(
+        average_salaries_sj = collect_average_salary_sj(
             secret_key,
             code_languages,
-            town_sj
+            sj_town_name,
         )
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
-    print(output_formatted_table(result_sj, f' SuperJob {town_sj}'))
+    print(output_formatted_table(
+        average_salaries_sj, f' SuperJob {sj_town_name}')
+    )
