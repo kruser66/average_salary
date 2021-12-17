@@ -104,7 +104,7 @@ def collect_average_salary_hh(code_languages, town):
                     if vacancy['salary']
                 ]
             )
-            if page == vacancies['pages']:
+            if page >= vacancies['pages'] - 1:
                 break
 
         average_salary[code] = calculate_totals(salaries, vacancies['found'])
