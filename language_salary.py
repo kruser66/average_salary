@@ -171,7 +171,7 @@ if __name__ == '__main__':
     secret_key = os.getenv('SUPERJOB_API_SECRET_KEY')
 
     # Для поиска по HeadHunter искать id здесь: https://api.hh.ru/areas
-    hh_id_area = 1
+    hh_area_id = 1
     hh_title_name = 'Москва'
 
     sj_town_name = 'Москва'
@@ -191,19 +191,19 @@ if __name__ == '__main__':
     ]
 
     try:
-        average_salaries_hh = collect_average_salary_hh(
-            code_languages, hh_id_area
+        hh_average_salaries = collect_average_salary_hh(
+            code_languages, hh_area_id
         )
 
     except requests.exceptions.HTTPError as error:
         exit("Can't get data from server:\n{0}".format(error))
 
     print(output_formatted_table(
-        average_salaries_hh, f' HeadHunter {hh_title_name}')
+        hh_average_salaries, f' HeadHunter {hh_title_name}')
     )
 
     try:
-        average_salaries_sj = collect_average_salary_sj(
+        sj_average_salaries = collect_average_salary_sj(
             secret_key,
             code_languages,
             sj_town_name,
@@ -212,5 +212,5 @@ if __name__ == '__main__':
         exit("Can't get data from server:\n{0}".format(error))
 
     print(output_formatted_table(
-        average_salaries_sj, f' SuperJob {sj_town_name}')
+        sj_average_salaries, f' SuperJob {sj_town_name}')
     )
